@@ -1,6 +1,7 @@
 import path from "path";
 import { config } from "dotenv";
 config({ path: path.resolve("config/.env") });
+const port = process.env.PORT || 3001;
 import { dbConnection } from "../DB/dbConnection.js";
 import authRoutes from "./modules/auth/auth.routes.js";
 import userRoutes from "./modules/user/user.routes.js";
@@ -14,6 +15,7 @@ import orderRoutes from "./modules/order/order.routes.js";
 import reviewRoutes from "./modules/review/review.routes.js";
 import { globalErrorHandling } from "./utils/asyncHandler.js";
 import morgan from "morgan";
+import chalk from "chalk"
 
 
 
@@ -51,4 +53,5 @@ export const initApp = (app, express) => {
   //global error handling
   app.use(globalErrorHandling);
 
+  app.listen(port, () => console.log(chalk.cyan(`Example app listening on port ${port}`)));
 };
