@@ -17,6 +17,8 @@ import { globalErrorHandling } from "./utils/asyncHandler.js";
 import morgan from "morgan";
 import chalk from "chalk"
 import cors from "cors"
+import { rollbackFromCloud } from "./utils/rollbackFromCloud.js";
+import { rollbackFromDB } from "./utils/rollbackFromDB.js";
 
 
 export const initApp = (app, express) => {
@@ -55,7 +57,7 @@ export const initApp = (app, express) => {
   dbConnection();
 
   //global error handling
-  app.use(globalErrorHandling);
+  app.use(globalErrorHandling, rollbackFromCloud, rollbackFromDB);
 
   app.listen(port, () => console.log(chalk.cyan(`Example app listening on port ${port}`)));
 };

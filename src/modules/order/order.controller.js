@@ -10,7 +10,7 @@ import { emailFunc } from "../../services/sendEmail.js";
 export const createOrder = asyncHandler(async (req, res, next) => {
   const { paymentMethod, phone, address } = req.body;
 
-  //==================check coupon===========================
+  //================== check coupon===========================
   if (req.body?.couponCode) {
     const coupon = await couponModel.findOne({
       code: req.body.couponCode.toLowerCase(),
@@ -23,7 +23,7 @@ export const createOrder = asyncHandler(async (req, res, next) => {
     req.body.coupon = coupon;
   }
 
-  //================check if send productId ===================
+  //================ check if send productId ===================
   let newProducts = [];
   let flag = false;
 
@@ -40,7 +40,7 @@ export const createOrder = asyncHandler(async (req, res, next) => {
     ];
   }
 
-  //================collect data to create order ===================
+  //================ collect data to create order ===================
   let finalProducts = [];
   let ids = [];
   let subPrice = 0;
@@ -63,7 +63,7 @@ export const createOrder = asyncHandler(async (req, res, next) => {
     subPrice += product.finalPrice;
   }
 
-  //================create order ===================
+  //================ create order ===================
 
   const order = await orderModel.create({
     userId: req.user._id,
@@ -77,7 +77,7 @@ export const createOrder = asyncHandler(async (req, res, next) => {
     status: paymentMethod == "cash" ? "placed" : "waitPayment",
   });
 
-  //====================decrease product==============
+  //==================== decrease product ==============
   for (const product of finalProducts) {
     await productModel.findOneAndUpdate(
       { _id: product.productId },
@@ -88,7 +88,7 @@ export const createOrder = asyncHandler(async (req, res, next) => {
     );
   }
 
-  //========================coupon usedBy===========
+  //======================== coupon usedBy ===========
   if (req.body?.couponCode) {
     await couponModel.findOneAndUpdate(
       { _id: req.body?.coupon?._id },
@@ -99,7 +99,7 @@ export const createOrder = asyncHandler(async (req, res, next) => {
     );
   }
 
-  //=====================cart============
+  //===================== cart ============
   if (!flag) {
     await cartModel.findOneAndUpdate(
       { userId: req.user._id },
@@ -114,7 +114,7 @@ export const createOrder = asyncHandler(async (req, res, next) => {
     );
   }
 
-  //=====================create pdf===============
+  //===================== create pdf ===============
 
   const invoice = {
     shipping: {
@@ -133,6 +133,7 @@ export const createOrder = asyncHandler(async (req, res, next) => {
   };
   await createInvoice(invoice, "invoice.pdf");
 
+  //===================== send notification to user =================
   await emailFunc({
     email: req.user.email,
     subject: "pdf order",
