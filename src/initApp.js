@@ -16,7 +16,7 @@ import reviewRoutes from "./modules/review/review.routes.js";
 import { globalErrorHandling } from "./utils/asyncHandler.js";
 import morgan from "morgan";
 import chalk from "chalk"
-
+import cors from "cors"
 
 
 export const initApp = (app, express) => {
@@ -26,6 +26,10 @@ export const initApp = (app, express) => {
   if (process.env.Mode == "dev") {
     app.use(morgan("dev"))
   }
+
+  app.use(cors());
+
+  // create routes for all routes 
   app.get("/", (req, res, next) => {
     res.status(200).json({ msg: "welcome on my project" })
   })
