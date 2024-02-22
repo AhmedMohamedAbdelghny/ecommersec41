@@ -15,7 +15,6 @@ import orderRoutes from "./modules/order/order.routes.js";
 import reviewRoutes from "./modules/review/review.routes.js";
 import { globalErrorHandling } from "./utils/asyncHandler.js";
 import morgan from "morgan";
-import chalk from "chalk"
 import cors from "cors"
 
 
@@ -57,5 +56,4 @@ export const initApp = (app, express) => {
   //global error handling
   app.use(globalErrorHandling);
 
-  app.listen(port, () => console.log(chalk.cyan(`Example app listening on port ${port}`)));
 };
