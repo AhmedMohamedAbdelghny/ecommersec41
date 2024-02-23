@@ -34,7 +34,7 @@ export const initApp = (app, express) => {
   })
 
   app.use((req, res, next) => {
-    if (req.originalUrl == "orders/webhook") {
+    if (req.originalUrl == "/orders/webhook") {
       next()
     } else {
       express.json()(req, res, next)
