@@ -20,10 +20,7 @@ import cors from "cors"
 import { rollbackFromCloud } from "./utils/rollbackFromCloud.js";
 import { rollbackFromDB } from "./utils/rollbackFromDB.js";
 
-
 export const initApp = (app, express) => {
-
-
 
   if (process.env.Mode == "dev") {
     app.use(morgan("dev"))
@@ -31,10 +28,11 @@ export const initApp = (app, express) => {
 
   app.use(cors());
 
-  // create routes for all routes 
+  // create routes for all routes
   app.get("/", (req, res, next) => {
     res.status(200).json({ msg: "welcome on my project" })
   })
+
   app.use(express.json());
   app.use("/auth", authRoutes);
   app.use("/users", userRoutes);

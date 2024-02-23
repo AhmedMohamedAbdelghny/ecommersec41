@@ -3,9 +3,10 @@ import orderModel from "../../../DB/models/order.model.js";
 import productModel from "../../../DB/models/product.model.js";
 import couponModel from "../../../DB/models/coupon.model.js";
 import cartModel from "../../../DB/models/cart.model.js";
-
 import { createInvoice } from "../../utils/pdf.js";
 import { emailFunc } from "../../services/sendEmail.js";
+import payment from "../../utils/payment.js";
+import Stripe from 'stripe';
 // ************************************createOrder*************************************
 export const createOrder = asyncHandler(async (req, res, next) => {
   const { paymentMethod, phone, address } = req.body;
@@ -116,41 +117,79 @@ export const createOrder = asyncHandler(async (req, res, next) => {
 
   //===================== create pdf ===============
 
-  const invoice = {
-    shipping: {
-      name: req.user.name,
-      address: req.user.address,
-      city: "cairo",
-      state: "cairo",
-      country: "Egypt",
-      postal_code: 94111
-    },
-    items: order.products,
-    subtotal: subPrice,
-    paid: order.totalprice,
-    invoice_nr: order._id,
-    date: order.createdAt
-  };
-  await createInvoice(invoice, "invoice.pdf");
+  // const invoice = {
+  //   shipping: {
+  //     name: req.user.name,
+  //     address: req.user.address,
+  //     city: "cairo",
+  //     state: "cairo",
+  //     country: "Egypt",
+  //     postal_code: 94111
+  //   },
+  //   items: order.products,
+  //   subtotal: subPrice,
+  //   paid: order.totalprice,
+  //   invoice_nr: order._id,
+  //   date: order.createdAt
+  // };
+  // await createInvoice(invoice, "invoice.pdf");
 
   //===================== send notification to user =================
-  await emailFunc({
-    email: req.user.email,
-    subject: "pdf order",
-    attachments: [
-      {
-        path: "invoice.pdf",
-        contentType: "application/pdf"
+  // await emailFunc({
+  //   email: req.user.email,
+  //   subject: "pdf order",
+  //   attachments: [
+  //     {
+  //       path: "invoice.pdf",
+  //       contentType: "application/pdf"
+  //     },
+  //     {
+  //       path: "route.jpg",
+  //       contentType: "image.jpg"
+
+  //     }
+  //   ]
+  // })
+
+  if (paymentMethod == "card") {
+    const stripe = new Stripe(process.env.stripe_key)
+
+    if (req.body.coupon) {
+      const coupon = await stripe.coupons.create({ percent_off: req.body.coupon.amount, duration: "once" })
+      req.body.couponId = coupon.id
+      console.log(coupon);
+
+    }
+    const session = await payment({
+      stripe,
+      payment_method_types: ["card"],
+      mode: "payment",
+      customer_email: req.user.email,
+      metadata: {
+        orderId: order._id.toString(),
       },
-      {
-        path:"route.jpg",
-        contentType: "image.jpg"
+      success_url: `${req.protocol}://${req.headers.host}/orders/success`,
+      cancel_url: `${req.protocol}://${req.headers.host}/orders/cancel`,
+      line_items: order.products.map((product) => {
+        return {
+          price_data: {
+            currency: "egp",
+            product_data: {
+              name: product.title,
+            },
+            unit_amount: product.price * 100,
+          },
+          quantity: product.quantity,
+        }
+      }),
+      discounts: req.body.couponId ? [{ coupon: req.body.couponId }] : []
 
-      }
-    ]
-  })
+    })
+    return res.status(201).json({ msg: "done", order, url: session.url });
 
-  res.status(201).json({ msg: "done", order });
+  }
+
+  return res.status(201).json({ msg: "done", order });
 });
 
 

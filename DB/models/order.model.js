@@ -21,7 +21,7 @@ const orderSchema = new Schema(
     totalprice: { type: Number, required: true },
     paymentMethod: {
       type: String,
-      enum: ["cash", "visa"],
+      enum: ["cash", "card"],
       default: "cash",
       required: true,
     },

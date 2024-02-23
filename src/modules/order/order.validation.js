@@ -10,7 +10,7 @@ export const createOrder = {
       phone: joi.array().items(joi.string().required()).required(),
       address: joi.string().required(),
       couponCode: joi.string(),
-      paymentMethod: joi.string().valid("cash", "visa").required(),
+      paymentMethod: joi.string().valid("cash", "card").required(),
     })
     .with("productId", "quantity")
     .required(),
