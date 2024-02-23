@@ -4,7 +4,7 @@ import * as OC from "./order.controller.js";
 import { validation } from "../../middleware/validation.js";
 import { auth } from "../../middleware/auth.js";
 import { validRoles } from "../../utils/systemRoles.js";
-
+import express from 'express';
 
 const router = Router();
 
@@ -19,6 +19,13 @@ router.patch("/:orderId",
   validation(OV.cancelOrder),
   auth([...validRoles.User, ...validRoles.Admin]),
   OC.cancelOrder)
+
+ 
+
+
+
+router.post('/webhook', express.raw({type: 'application/json'}), OC.webhook);
+
 
 
 
